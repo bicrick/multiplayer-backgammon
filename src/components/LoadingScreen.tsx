@@ -14,7 +14,7 @@ export default function LoadingScreen({
     : "flex items-center justify-center p-8";
 
   return (
-    <div className={containerClass} style={{ background: fullScreen ? 'linear-gradient(135deg, #1a1612 0%, #2d1810 50%, #1a1612 100%)' : 'transparent' }}>
+    <div className={containerClass} style={{ background: fullScreen ? 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #f5efe6 100%)' : 'transparent' }}>
       <div className="text-center">
         {/* Backgammon inspired loading animation - dice rolling */}
         <div className="flex justify-center gap-4 mb-6">
@@ -48,7 +48,7 @@ export default function LoadingScreen({
         </div>
 
         {/* Loading text */}
-        <div className="text-xl font-semibold font-mono" style={{ color: '#d4a574' }}>
+        <div className="text-xl font-semibold font-mono" style={{ color: '#2e6b8a' }}>
           {message}
         </div>
       </div>
@@ -65,4 +65,3 @@ export default function LoadingScreen({
     </div>
   );
 }
-

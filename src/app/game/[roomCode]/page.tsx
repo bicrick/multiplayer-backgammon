@@ -535,10 +535,15 @@ export default function Game() {
       );
     }
 
+    // Alternate animation for second die
+    const animationClass = isRolling 
+      ? (index === 0 ? 'dice-rolling' : 'dice-rolling-alt') 
+      : '';
+
     return (
       <div
         key={index}
-        className={`dice relative w-10 h-10 sm:w-12 sm:h-12 ${isRolling ? 'dice-rolling' : ''}`}
+        className={`dice relative w-10 h-10 sm:w-12 sm:h-12 ${animationClass}`}
       >
         {dots}
       </div>
@@ -547,16 +552,18 @@ export default function Game() {
 
   // Render checker
   const renderChecker = (player: 1 | 2, count: number, isStacked: boolean = false, stackIndex: number = 0) => {
-    const baseClass = player === 1 ? 'checker checker-white' : 'checker checker-brown';
+    const baseClass = player === 1 ? 'checker checker-white' : 'checker checker-black';
+    const isOpponent = playerNumber !== null && player !== playerNumber;
+    const opponentClass = isOpponent ? 'checker-opponent' : '';
     const size = 'w-6 h-6 sm:w-8 sm:h-8';
     
     return (
       <div
-        className={`${baseClass} ${size} rounded-full flex-shrink-0`}
+        className={`${baseClass} ${opponentClass} ${size} rounded-full flex-shrink-0`}
         style={isStacked ? { marginTop: stackIndex > 0 ? '-12px' : '0' } : {}}
       >
         {count > 1 && stackIndex === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center text-xs font-bold" style={{ color: player === 1 ? '#4a2c1a' : '#f5f0e6' }}>
+          <div className="absolute inset-0 flex items-center justify-center text-xs font-bold" style={{ color: player === 1 ? '#1a1a1a' : '#faf8f5' }}>
             {count}
           </div>
         )}
@@ -572,8 +579,8 @@ export default function Game() {
     const isSelected = selectedPoint === index;
     const isValidTarget = validMoves.includes(index);
     
-    // Point colors alternate
-    const pointColor = index % 2 === 0 ? '#8b4513' : '#daa520';
+    // Point colors alternate - terracotta and Aegean blue
+    const pointColor = index % 2 === 0 ? '#b85a3a' : '#2e6b8a';
     
     const maxVisible = 5;
     const visibleCount = Math.min(absCount, maxVisible);
@@ -581,7 +588,7 @@ export default function Game() {
     return (
       <div
         key={index}
-        className={`relative flex flex-col items-center cursor-pointer transition-all ${isTop ? 'justify-start' : 'justify-end'} ${isSelected ? 'ring-2 ring-green-500' : ''} ${isValidTarget ? 'valid-move ring-2 ring-green-400' : ''}`}
+        className={`relative flex flex-col items-center cursor-pointer transition-all ${isTop ? 'justify-start' : 'justify-end'} ${isSelected ? 'ring-2 ring-amber-400' : ''} ${isValidTarget ? 'valid-move ring-2 ring-amber-300' : ''}`}
         style={{ width: '100%', height: '100%' }}
         onClick={() => handlePointClick(index)}
       >
@@ -608,10 +615,10 @@ export default function Game() {
   };
 
   if (error) return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-3 sm:p-4" style={{ background: 'linear-gradient(135deg, #1a1612 0%, #2d1810 50%, #1a1612 100%)' }}>
-      <div className="rounded-lg p-4 sm:p-6 text-center max-w-sm sm:max-w-md w-full" style={{ background: '#2d1810', border: '2px solid #5c3d2e' }}>
-        <div className="text-lg sm:text-xl mb-4" style={{ color: '#fca5a5' }}>{error}</div>
-        <button onClick={() => router.push('/')} className="font-bold py-2 sm:py-3 px-4 sm:px-6 rounded transition-colors text-sm sm:text-base" style={{ background: '#5c3d2e', color: '#d4a574' }}>
+    <div className="flex flex-col items-center justify-center min-h-screen p-3 sm:p-4" style={{ background: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #f5efe6 100%)' }}>
+      <div className="rounded-lg p-4 sm:p-6 text-center max-w-sm sm:max-w-md w-full" style={{ background: '#fff', border: '2px solid #c45c3e', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <div className="text-lg sm:text-xl mb-4" style={{ color: '#c45c3e' }}>{error}</div>
+        <button onClick={() => router.push('/')} className="font-bold py-2 sm:py-3 px-4 sm:px-6 rounded transition-colors text-sm sm:text-base" style={{ background: '#2e6b8a', color: '#fff' }}>
           Back to Home
         </button>
       </div>
@@ -622,40 +629,40 @@ export default function Game() {
 
   if (showJoinPrompt) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-3 sm:p-4" style={{ background: 'linear-gradient(135deg, #1a1612 0%, #2d1810 50%, #1a1612 100%)' }}>
+      <div className="min-h-screen flex items-center justify-center p-3 sm:p-4" style={{ background: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #f5efe6 100%)' }}>
         <div className="w-full max-w-sm sm:max-w-md">
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2 tracking-wide font-serif" style={{ color: '#d4a574' }}>BACKGAMMON</h1>
-            <div className="rounded-lg p-3 sm:p-4 mb-4" style={{ background: '#2d1810', border: '2px solid #5c3d2e' }}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2 tracking-wide font-serif" style={{ color: '#2e6b8a' }}>BACKGAMMON</h1>
+            <div className="rounded-lg p-3 sm:p-4 mb-4" style={{ background: '#fff', border: '2px solid #c45c3e', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
                 <div className="text-center sm:text-left">
-                  <p className="text-base sm:text-lg font-semibold" style={{ color: '#f5e6d3' }}>Room: {roomCode}</p>
-                  <p className="text-sm" style={{ color: '#8b7355' }}>{game.player1_username} is waiting for you!</p>
+                  <p className="text-base sm:text-lg font-semibold" style={{ color: '#2c3e50' }}>Room: {roomCode}</p>
+                  <p className="text-sm" style={{ color: '#6b7280' }}>{game.player1_username} is waiting for you!</p>
                 </div>
-                <button onClick={copyGameUrl} className="px-2 sm:px-3 py-1 sm:py-2 rounded-md font-mono text-xs transition-all duration-200 whitespace-nowrap" style={{ background: copySuccess ? '#16a34a' : '#0891b2', color: 'white' }}>
+                <button onClick={copyGameUrl} className="px-2 sm:px-3 py-1 sm:py-2 rounded-md font-mono text-xs transition-all duration-200 whitespace-nowrap" style={{ background: copySuccess ? '#16a34a' : '#2e6b8a', color: 'white' }}>
                   {copySuccess ? 'Copied!' : 'Copy Link'}
                 </button>
               </div>
             </div>
           </div>
-          <div className="rounded-lg p-4 sm:p-6" style={{ background: 'linear-gradient(145deg, #3d2817, #2d1810)', border: '2px solid #5c3d2e' }}>
+          <div className="rounded-lg p-4 sm:p-6" style={{ background: '#fff', border: '2px solid #c45c3e', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
             <div className="mb-4">
-              <label className="block text-xs font-bold mb-2 uppercase" style={{ color: '#c4956a' }}>Player Name</label>
+              <label className="block text-xs font-bold mb-2 uppercase" style={{ color: '#c45c3e' }}>Player Name</label>
               <input
                 type="text"
                 placeholder="Enter your name"
                 value={joinUsername}
                 onChange={(e) => setJoinUsername(e.target.value)}
-                className="w-full p-2 sm:p-3 rounded text-white placeholder-gray-500 focus:outline-none text-sm sm:text-base"
-                style={{ background: '#1a1612', border: '2px solid #5c3d2e' }}
+                className="w-full p-2 sm:p-3 rounded placeholder-gray-400 focus:outline-none text-sm sm:text-base"
+                style={{ background: '#f5efe6', border: '2px solid #d4cfc5', color: '#2c3e50' }}
                 onKeyPress={(e) => e.key === 'Enter' && handleManualJoin()}
                 autoFocus
               />
             </div>
-            <button onClick={handleManualJoin} className="w-full font-bold py-2 sm:py-3 px-4 rounded mb-4 text-sm sm:text-base" style={{ background: 'linear-gradient(145deg, #d4a574, #c4956a)', color: '#1a1612' }}>
+            <button onClick={handleManualJoin} className="w-full font-bold py-2 sm:py-3 px-4 rounded mb-4 text-sm sm:text-base" style={{ background: '#2e6b8a', color: '#fff' }}>
               Join Game
             </button>
-            <button onClick={() => router.push('/')} className="w-full font-bold px-4 py-2 sm:py-3 rounded text-sm sm:text-base" style={{ background: '#5c3d2e', color: '#d4a574' }}>
+            <button onClick={() => router.push('/')} className="w-full font-bold px-4 py-2 sm:py-3 rounded text-sm sm:text-base" style={{ background: '#c45c3e', color: '#fff' }}>
               Back to Home
             </button>
           </div>
@@ -670,14 +677,14 @@ export default function Game() {
   const canMove = isMyTurn && dice && moves_left && moves_left.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4" style={{ background: 'linear-gradient(135deg, #1a1612 0%, #2d1810 50%, #1a1612 100%)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4" style={{ background: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #f5efe6 100%)' }}>
       {/* Header */}
       <div className="text-center mb-2 sm:mb-4">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 font-serif tracking-wider" style={{ color: '#d4a574' }}>BACKGAMMON</h1>
-        <div className="rounded px-3 py-2 inline-block" style={{ background: '#2d1810', border: '1px solid #5c3d2e' }}>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 font-serif tracking-wider" style={{ color: '#2e6b8a' }}>BACKGAMMON</h1>
+        <div className="rounded px-3 py-2 inline-block" style={{ background: '#fff', border: '1px solid #c45c3e', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="font-mono text-xs sm:text-sm" style={{ color: '#f5e6d3' }}>Room: {roomCode}</span>
-            <button onClick={copyGameUrl} className="px-2 py-1 rounded text-xs" style={{ background: copySuccess ? '#16a34a' : '#0891b2', color: 'white' }}>
+            <span className="font-mono text-xs sm:text-sm" style={{ color: '#2c3e50' }}>Room: {roomCode}</span>
+            <button onClick={copyGameUrl} className="px-2 py-1 rounded text-xs" style={{ background: copySuccess ? '#16a34a' : '#2e6b8a', color: 'white' }}>
               {copySuccess ? 'Copied!' : 'Copy'}
             </button>
           </div>
@@ -688,26 +695,26 @@ export default function Game() {
       <div className="w-full max-w-4xl mb-2 sm:mb-4 px-2">
         {winner !== null ? (
           <div className="text-center">
-            <div className="font-bold text-lg sm:text-xl md:text-2xl py-3 sm:py-4 rounded mb-4" style={{ background: '#d4a574', color: '#1a1612' }}>
+            <div className="font-bold text-lg sm:text-xl md:text-2xl py-3 sm:py-4 rounded mb-4" style={{ background: '#d4a46a', color: '#fff' }}>
               {winner === 1 ? player1_username : player2_username} WINS!
             </div>
-            <button onClick={handleResetGame} className="font-mono font-bold py-2 sm:py-3 px-4 sm:px-6 rounded text-sm sm:text-base" style={{ background: '#5c3d2e', color: '#d4a574' }}>
+            <button onClick={handleResetGame} className="font-mono font-bold py-2 sm:py-3 px-4 sm:px-6 rounded text-sm sm:text-base" style={{ background: '#2e6b8a', color: '#fff' }}>
               PLAY AGAIN
             </button>
           </div>
         ) : (
-          <div className="flex justify-between items-center rounded p-2 sm:p-3 gap-2" style={{ background: '#2d1810', border: '1px solid #5c3d2e' }}>
+          <div className="flex justify-between items-center rounded p-2 sm:p-3 gap-2" style={{ background: '#fff', border: '1px solid #c45c3e', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             {/* Player 1 */}
-            <div className={`flex items-center gap-2 p-2 rounded transition-all ${current_turn === 1 ? 'ring-2 ring-amber-500' : 'opacity-60'}`}>
+            <div className={`flex items-center gap-2 p-2 rounded transition-all ${current_turn === 1 ? 'ring-2 ring-amber-400' : 'opacity-60'}`}>
               <div className="checker checker-white w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
               <div>
-                <p className="font-bold text-sm sm:text-base" style={{ color: '#f5e6d3' }}>{player1_username}</p>
-                <p className="text-xs" style={{ color: '#8b7355' }}>Off: {borne_off.player1}</p>
+                <p className="font-bold text-sm sm:text-base" style={{ color: '#2c3e50' }}>{player1_username}</p>
+                <p className="text-xs" style={{ color: '#6b7280' }}>Off: {borne_off.player1}</p>
               </div>
               {(sessionScore.player1Wins > 0 || sessionScore.player2Wins > 0) && (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(212,165,116,0.3)', color: '#d4a574' }}>{sessionScore.player1Wins}</span>
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(212,164,106,0.3)', color: '#c45c3e' }}>{sessionScore.player1Wins}</span>
               )}
-              {current_turn === 1 && <span className="animate-pulse ml-1">▶</span>}
+              {current_turn === 1 && <span className="animate-pulse ml-1" style={{ color: '#c45c3e' }}>▶</span>}
             </div>
 
             {/* Dice */}
@@ -717,30 +724,30 @@ export default function Game() {
                   {dice.map((d, i) => renderDice(d, i))}
                 </div>
               ) : needsToRoll ? (
-                <button onClick={handleRollDice} disabled={isRolling} className="font-bold py-2 px-4 rounded text-sm transition-all hover:scale-105" style={{ background: 'linear-gradient(145deg, #d4a574, #c4956a)', color: '#1a1612' }}>
+                <button onClick={handleRollDice} disabled={isRolling} className="font-bold py-2 px-4 rounded text-sm transition-all hover:scale-105" style={{ background: '#2e6b8a', color: '#fff' }}>
                   {isRolling ? 'Rolling...' : 'Roll Dice'}
                 </button>
               ) : (
-                <div className="text-xs" style={{ color: '#8b7355' }}>Waiting...</div>
+                <div className="text-xs" style={{ color: '#6b7280' }}>Waiting...</div>
               )}
               {moves_left && moves_left.length > 0 && (
-                <div className="text-xs" style={{ color: '#8b7355' }}>
+                <div className="text-xs" style={{ color: '#6b7280' }}>
                   Moves: {moves_left.join(', ')}
                 </div>
               )}
             </div>
 
             {/* Player 2 */}
-            <div className={`flex items-center gap-2 p-2 rounded transition-all ${current_turn === 2 ? 'ring-2 ring-amber-500' : 'opacity-60'}`}>
-              {current_turn === 2 && <span className="animate-pulse mr-1">◀</span>}
+            <div className={`flex items-center gap-2 p-2 rounded transition-all ${current_turn === 2 ? 'ring-2 ring-amber-400' : 'opacity-60'}`}>
+              {current_turn === 2 && <span className="animate-pulse mr-1" style={{ color: '#2e6b8a' }}>◀</span>}
               {(sessionScore.player1Wins > 0 || sessionScore.player2Wins > 0) && (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(74,44,26,0.5)', color: '#c4956a' }}>{sessionScore.player2Wins}</span>
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(46,107,138,0.2)', color: '#2e6b8a' }}>{sessionScore.player2Wins}</span>
               )}
               <div className="text-right">
-                <p className="font-bold text-sm sm:text-base" style={{ color: '#f5e6d3' }}>{player2_username || 'Waiting...'}</p>
-                <p className="text-xs" style={{ color: '#8b7355' }}>Off: {borne_off.player2}</p>
+                <p className="font-bold text-sm sm:text-base" style={{ color: '#2c3e50' }}>{player2_username || 'Waiting...'}</p>
+                <p className="text-xs" style={{ color: '#6b7280' }}>Off: {borne_off.player2}</p>
               </div>
-              <div className="checker checker-brown w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
+              <div className="checker checker-black w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
             </div>
           </div>
         )}
@@ -749,12 +756,69 @@ export default function Game() {
       {/* Game Board */}
       <div className="w-full max-w-4xl mx-auto px-2">
         <div className="relative rounded-lg p-2 sm:p-4" style={{ 
-          background: 'linear-gradient(145deg, #5c3d2e, #4a2c1a)',
-          border: '4px solid #8b4513',
-          boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.5)'
+          background: 'linear-gradient(145deg, #c45c3e, #a04830)',
+          border: '4px solid #d4a46a',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
         }}>
+          {/* Direction arrows in the frame/border */}
+          {playerNumber && (
+            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
+              {playerNumber === 1 ? (
+                /* Player 1 (white): bottom LEFT, top RIGHT to home */
+                <>
+                  {/* Bottom border - arrows pointing left */}
+                  <div className="absolute bottom-0.5 left-6 right-20 h-3 flex items-center justify-around">
+                    <span className="text-white/80 text-xs">◄</span>
+                    <span className="text-white/80 text-xs">◄</span>
+                    <span className="text-white/80 text-xs">◄</span>
+                    <span className="text-white/80 text-xs">◄</span>
+                    <span className="text-white/80 text-xs">◄</span>
+                  </div>
+                  {/* Top border - arrows pointing right */}
+                  <div className="absolute top-0.5 left-6 right-20 h-3 flex items-center justify-around">
+                    <span className="text-white/80 text-xs">►</span>
+                    <span className="text-white/80 text-xs">►</span>
+                    <span className="text-white/80 text-xs">►</span>
+                    <span className="text-white/80 text-xs">►</span>
+                    <span className="text-white/80 text-xs">►</span>
+                  </div>
+                  {/* Left border - arrow pointing up */}
+                  <div className="absolute left-0.5 top-6 bottom-6 w-3 flex flex-col items-center justify-around">
+                    <span className="text-white/80 text-xs">▲</span>
+                    <span className="text-white/80 text-xs">▲</span>
+                  </div>
+                </>
+              ) : (
+                /* Player 2 (black): top LEFT, bottom RIGHT to home */
+                <>
+                  {/* Top border - arrows pointing left */}
+                  <div className="absolute top-0.5 left-6 right-20 h-3 flex items-center justify-around">
+                    <span className="text-white/80 text-xs">◄</span>
+                    <span className="text-white/80 text-xs">◄</span>
+                    <span className="text-white/80 text-xs">◄</span>
+                    <span className="text-white/80 text-xs">◄</span>
+                    <span className="text-white/80 text-xs">◄</span>
+                  </div>
+                  {/* Bottom border - arrows pointing right */}
+                  <div className="absolute bottom-0.5 left-6 right-20 h-3 flex items-center justify-around">
+                    <span className="text-white/80 text-xs">►</span>
+                    <span className="text-white/80 text-xs">►</span>
+                    <span className="text-white/80 text-xs">►</span>
+                    <span className="text-white/80 text-xs">►</span>
+                    <span className="text-white/80 text-xs">►</span>
+                  </div>
+                  {/* Left border - arrow pointing down */}
+                  <div className="absolute left-0.5 top-6 bottom-6 w-3 flex flex-col items-center justify-around">
+                    <span className="text-white/80 text-xs">▼</span>
+                    <span className="text-white/80 text-xs">▼</span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          
           {/* Board inner area */}
-          <div className="rounded" style={{ background: '#2d5016', border: '2px solid #1a3009' }}>
+          <div className="rounded relative" style={{ background: '#faf6f0', border: '2px solid #e8dfd0' }}>
             {/* Top row (points 13-24 for player 1 view) */}
             <div className="flex" style={{ height: '120px', minHeight: '100px' }}>
               {/* Points 13-18 */}
@@ -766,8 +830,8 @@ export default function Game() {
               
               {/* Bar */}
               <div 
-                className={`w-10 sm:w-14 flex flex-col items-center justify-start pt-2 cursor-pointer ${selectedPoint === 'bar' ? 'ring-2 ring-green-500' : ''}`}
-                style={{ background: '#4a2c1a' }}
+                className={`w-10 sm:w-14 flex flex-col items-center justify-start pt-2 cursor-pointer ${selectedPoint === 'bar' ? 'ring-2 ring-amber-400' : ''}`}
+                style={{ background: '#a04830' }}
                 onClick={() => handlePointClick('bar')}
               >
                 {bar.player2 > 0 && (
@@ -784,14 +848,19 @@ export default function Game() {
                 ))}
               </div>
               
-              {/* Bear off area - Player 1 */}
+              {/* Bear off area - Player 1 with home indicator */}
               <div 
-                className={`w-8 sm:w-12 flex flex-col items-center justify-start pt-2 cursor-pointer rounded-r ${validMoves.includes('off') && playerNumber === 1 ? 'ring-2 ring-green-400 valid-move' : ''}`}
-                style={{ background: '#3d2817' }}
+                className={`w-8 sm:w-12 flex flex-col items-center justify-start pt-2 cursor-pointer rounded-r ${validMoves.includes('off') && playerNumber === 1 ? 'ring-2 ring-amber-300 valid-move' : ''}`}
+                style={{ background: '#d4a46a' }}
                 onClick={handleBearOffClick}
               >
+                {playerNumber === 1 && (
+                  <svg className="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="#ffffff" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}>
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                  </svg>
+                )}
                 {borne_off.player1 > 0 && (
-                  <div className="text-xs font-bold" style={{ color: '#f5f0e6' }}>
+                  <div className="text-xs font-bold" style={{ color: '#2c3e50' }}>
                     {borne_off.player1}
                   </div>
                 )}
@@ -799,11 +868,11 @@ export default function Game() {
             </div>
 
             {/* Middle divider (the bar) */}
-            <div className="h-3 flex" style={{ background: '#1a3009' }}>
+            <div className="h-3 flex" style={{ background: '#e8dfd0' }}>
               <div className="flex-1" />
-              <div className="w-10 sm:w-14" style={{ background: '#4a2c1a' }} />
+              <div className="w-10 sm:w-14" style={{ background: '#a04830' }} />
               <div className="flex-1" />
-              <div className="w-8 sm:w-12" style={{ background: '#3d2817' }} />
+              <div className="w-8 sm:w-12" style={{ background: '#d4a46a' }} />
             </div>
 
             {/* Bottom row (points 1-12 for player 1 view) */}
@@ -817,8 +886,8 @@ export default function Game() {
               
               {/* Bar */}
               <div 
-                className={`w-10 sm:w-14 flex flex-col items-center justify-end pb-2 cursor-pointer ${selectedPoint === 'bar' ? 'ring-2 ring-green-500' : ''}`}
-                style={{ background: '#4a2c1a' }}
+                className={`w-10 sm:w-14 flex flex-col items-center justify-end pb-2 cursor-pointer ${selectedPoint === 'bar' ? 'ring-2 ring-amber-400' : ''}`}
+                style={{ background: '#a04830' }}
                 onClick={() => handlePointClick('bar')}
               >
                 {bar.player1 > 0 && (
@@ -835,16 +904,21 @@ export default function Game() {
                 ))}
               </div>
               
-              {/* Bear off area - Player 2 */}
+              {/* Bear off area - Player 2 with home indicator */}
               <div 
-                className={`w-8 sm:w-12 flex flex-col items-center justify-end pb-2 cursor-pointer rounded-r ${validMoves.includes('off') && playerNumber === 2 ? 'ring-2 ring-green-400 valid-move' : ''}`}
-                style={{ background: '#3d2817' }}
+                className={`w-8 sm:w-12 flex flex-col items-center justify-end pb-2 cursor-pointer rounded-r ${validMoves.includes('off') && playerNumber === 2 ? 'ring-2 ring-amber-300 valid-move' : ''}`}
+                style={{ background: '#d4a46a' }}
                 onClick={handleBearOffClick}
               >
                 {borne_off.player2 > 0 && (
-                  <div className="text-xs font-bold" style={{ color: '#4a2c1a' }}>
+                  <div className="text-xs font-bold" style={{ color: '#2c3e50' }}>
                     {borne_off.player2}
                   </div>
+                )}
+                {playerNumber === 2 && (
+                  <svg className="w-5 h-5 mt-1" viewBox="0 0 24 24" fill="#1a1a1a" style={{ filter: 'drop-shadow(0 1px 2px rgba(255,255,255,0.3))' }}>
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                  </svg>
                 )}
               </div>
             </div>
@@ -854,13 +928,13 @@ export default function Game() {
 
       {/* Instructions */}
       {canMove && (
-        <div className="mt-2 text-center text-xs sm:text-sm" style={{ color: '#8b7355' }}>
+        <div className="mt-2 text-center text-xs sm:text-sm" style={{ color: '#6b7280' }}>
           {selectedPoint !== null ? 'Click a highlighted point to move' : 'Click a checker to select, then click destination'}
         </div>
       )}
 
       {/* Back Button */}
-      <button onClick={() => router.push('/')} className="mt-4 font-mono font-bold py-2 px-4 rounded text-sm" style={{ background: '#5c3d2e', color: '#d4a574', border: '1px solid #8b4513' }}>
+      <button onClick={() => router.push('/')} className="mt-4 font-mono font-bold py-2 px-4 rounded text-sm" style={{ background: '#c45c3e', color: '#fff' }}>
         ← BACK TO HOME
       </button>
     </div>
