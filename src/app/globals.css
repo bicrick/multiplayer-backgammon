@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  /* Mediterranean / Greek Islands Theme */
-  --background: #f5efe6;           /* Warm sandy beige */
-  --foreground: #2c3e50;           /* Deep navy text */
-  --board-frame: #c45c3e;          /* Terracotta clay */
-  --board-surface: #faf6f0;        /* Cream limestone */
+  /* Rich Wood & Felt Gaming Theme */
+  --background: #1a1f2e;           /* Deep slate blue */
+  --foreground: #e8e4dc;           /* Warm off-white */
+  --board-frame: #8b4513;          /* Rich saddle brown */
+  --board-surface: #f5f0e6;        /* Warm cream felt */
   --point-terracotta: #b85a3a;     /* Terracotta triangles */
   --point-blue: #2e6b8a;           /* Aegean blue triangles */
-  --bar-color: #a04830;            /* Darker terracotta bar */
+  --bar-color: #6b3a0a;            /* Dark wood bar */
   --checker-white: #faf8f5;        /* Ivory/cream */
-  --checker-blue: #1e5f7a;         /* Aegean blue */
+  --checker-black: #1a1a1a;        /* True black */
   --accent-gold: #d4a46a;          /* Warm gold accent */
+  --panel-bg: #252b3d;             /* Slightly lighter panel */
 }
 
 @theme inline {
@@ -56,10 +57,10 @@ body {
   border: 2px solid #0a0a0a;
 }
 
-/* Opponent pieces fade effect */
+/* Opponent pieces - subtle distinction */
 .checker-opponent {
-  opacity: 0.5;
-  filter: grayscale(30%);
+  opacity: 0.75;
+  filter: grayscale(15%);
 }
 
 /* Point triangle styling */

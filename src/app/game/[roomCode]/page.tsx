@@ -615,10 +615,10 @@ export default function Game() {
   };
 
   if (error) return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-3 sm:p-4" style={{ background: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #f5efe6 100%)' }}>
-      <div className="rounded-lg p-4 sm:p-6 text-center max-w-sm sm:max-w-md w-full" style={{ background: '#fff', border: '2px solid #c45c3e', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-        <div className="text-lg sm:text-xl mb-4" style={{ color: '#c45c3e' }}>{error}</div>
-        <button onClick={() => router.push('/')} className="font-bold py-2 sm:py-3 px-4 sm:px-6 rounded transition-colors text-sm sm:text-base" style={{ background: '#2e6b8a', color: '#fff' }}>
+    <div className="flex flex-col items-center justify-center min-h-screen p-3 sm:p-4" style={{ background: 'linear-gradient(145deg, #1a1f2e 0%, #252b3d 50%, #1a1f2e 100%)' }}>
+      <div className="rounded-lg p-4 sm:p-6 text-center max-w-sm sm:max-w-md w-full" style={{ background: '#252b3d', border: '2px solid #c45c3e', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+        <div className="text-lg sm:text-xl mb-4" style={{ color: '#e8836b' }}>{error}</div>
+        <button onClick={() => router.push('/')} className="font-bold py-2 sm:py-3 px-4 sm:px-6 rounded transition-colors text-sm sm:text-base hover:opacity-90" style={{ background: '#2e6b8a', color: '#fff' }}>
           Back to Home
         </button>
       </div>
@@ -629,40 +629,40 @@ export default function Game() {
 
   if (showJoinPrompt) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-3 sm:p-4" style={{ background: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #f5efe6 100%)' }}>
+      <div className="min-h-screen flex items-center justify-center p-3 sm:p-4" style={{ background: 'linear-gradient(145deg, #1a1f2e 0%, #252b3d 50%, #1a1f2e 100%)' }}>
         <div className="w-full max-w-sm sm:max-w-md">
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2 tracking-wide font-serif" style={{ color: '#2e6b8a' }}>BACKGAMMON</h1>
-            <div className="rounded-lg p-3 sm:p-4 mb-4" style={{ background: '#fff', border: '2px solid #c45c3e', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2 tracking-wide font-serif" style={{ color: '#d4a46a' }}>BACKGAMMON</h1>
+            <div className="rounded-lg p-3 sm:p-4 mb-4" style={{ background: '#252b3d', border: '2px solid #8b4513', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
                 <div className="text-center sm:text-left">
-                  <p className="text-base sm:text-lg font-semibold" style={{ color: '#2c3e50' }}>Room: {roomCode}</p>
-                  <p className="text-sm" style={{ color: '#6b7280' }}>{game.player1_username} is waiting for you!</p>
+                  <p className="text-base sm:text-lg font-semibold" style={{ color: '#e8e4dc' }}>Room: {roomCode}</p>
+                  <p className="text-sm" style={{ color: '#9ca3af' }}>{game.player1_username} is waiting for you!</p>
                 </div>
-                <button onClick={copyGameUrl} className="px-2 sm:px-3 py-1 sm:py-2 rounded-md font-mono text-xs transition-all duration-200 whitespace-nowrap" style={{ background: copySuccess ? '#16a34a' : '#2e6b8a', color: 'white' }}>
+                <button onClick={copyGameUrl} className="px-2 sm:px-3 py-1 sm:py-2 rounded-md font-mono text-xs transition-all duration-200 whitespace-nowrap hover:opacity-90" style={{ background: copySuccess ? '#16a34a' : '#2e6b8a', color: 'white' }}>
                   {copySuccess ? 'Copied!' : 'Copy Link'}
                 </button>
               </div>
             </div>
           </div>
-          <div className="rounded-lg p-4 sm:p-6" style={{ background: '#fff', border: '2px solid #c45c3e', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+          <div className="rounded-lg p-4 sm:p-6" style={{ background: '#252b3d', border: '2px solid #8b4513', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
             <div className="mb-4">
-              <label className="block text-xs font-bold mb-2 uppercase" style={{ color: '#c45c3e' }}>Player Name</label>
+              <label className="block text-xs font-bold mb-2 uppercase tracking-wider" style={{ color: '#d4a46a' }}>Player Name</label>
               <input
                 type="text"
                 placeholder="Enter your name"
                 value={joinUsername}
                 onChange={(e) => setJoinUsername(e.target.value)}
-                className="w-full p-2 sm:p-3 rounded placeholder-gray-400 focus:outline-none text-sm sm:text-base"
-                style={{ background: '#f5efe6', border: '2px solid #d4cfc5', color: '#2c3e50' }}
+                className="w-full p-2 sm:p-3 rounded placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm sm:text-base"
+                style={{ background: '#1a1f2e', border: '2px solid #3d4556', color: '#e8e4dc' }}
                 onKeyPress={(e) => e.key === 'Enter' && handleManualJoin()}
                 autoFocus
               />
             </div>
-            <button onClick={handleManualJoin} className="w-full font-bold py-2 sm:py-3 px-4 rounded mb-4 text-sm sm:text-base" style={{ background: '#2e6b8a', color: '#fff' }}>
+            <button onClick={handleManualJoin} className="w-full font-bold py-2 sm:py-3 px-4 rounded mb-4 text-sm sm:text-base hover:opacity-90 transition-opacity" style={{ background: '#2e6b8a', color: '#fff' }}>
               Join Game
             </button>
-            <button onClick={() => router.push('/')} className="w-full font-bold px-4 py-2 sm:py-3 rounded text-sm sm:text-base" style={{ background: '#c45c3e', color: '#fff' }}>
+            <button onClick={() => router.push('/')} className="w-full font-bold px-4 py-2 sm:py-3 rounded text-sm sm:text-base hover:opacity-90 transition-opacity" style={{ background: '#8b4513', color: '#fff' }}>
               Back to Home
             </button>
           </div>
@@ -677,17 +677,16 @@ export default function Game() {
   const canMove = isMyTurn && dice && moves_left && moves_left.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4" style={{ background: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #f5efe6 100%)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4" style={{ background: 'linear-gradient(145deg, #1a1f2e 0%, #252b3d 50%, #1a1f2e 100%)' }}>
       {/* Header */}
-      <div className="text-center mb-2 sm:mb-4">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 font-serif tracking-wider" style={{ color: '#2e6b8a' }}>BACKGAMMON</h1>
-        <div className="rounded px-3 py-2 inline-block" style={{ background: '#fff', border: '1px solid #c45c3e', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <span className="font-mono text-xs sm:text-sm" style={{ color: '#2c3e50' }}>Room: {roomCode}</span>
-            <button onClick={copyGameUrl} className="px-2 py-1 rounded text-xs" style={{ background: copySuccess ? '#16a34a' : '#2e6b8a', color: 'white' }}>
-              {copySuccess ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
+      <div className="text-center mb-3 sm:mb-5">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 font-serif tracking-widest" style={{ color: '#d4a46a', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>BACKGAMMON</h1>
+        <div className="rounded-lg px-4 py-2 inline-flex items-center gap-3" style={{ background: '#252b3d', border: '1px solid #3d4556', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+          <span className="font-mono text-xs sm:text-sm font-medium" style={{ color: '#9ca3af' }}>Room:</span>
+          <span className="font-mono text-xs sm:text-sm font-bold tracking-wider" style={{ color: '#d4a46a' }}>{roomCode}</span>
+          <button onClick={copyGameUrl} className="px-2.5 py-1 rounded text-xs font-semibold transition-all hover:opacity-90" style={{ background: copySuccess ? '#16a34a' : '#2e6b8a', color: 'white' }}>
+            {copySuccess ? 'Copied!' : 'Copy'}
+          </button>
         </div>
       </div>
 
@@ -695,26 +694,26 @@ export default function Game() {
       <div className="w-full max-w-4xl mb-2 sm:mb-4 px-2">
         {winner !== null ? (
           <div className="text-center">
-            <div className="font-bold text-lg sm:text-xl md:text-2xl py-3 sm:py-4 rounded mb-4" style={{ background: '#d4a46a', color: '#fff' }}>
+            <div className="font-bold text-lg sm:text-xl md:text-2xl py-3 sm:py-4 rounded-lg mb-4" style={{ background: 'linear-gradient(135deg, #d4a46a, #c49358)', color: '#1a1f2e', boxShadow: '0 4px 16px rgba(212,164,106,0.4)' }}>
               {winner === 1 ? player1_username : player2_username} WINS!
             </div>
-            <button onClick={handleResetGame} className="font-mono font-bold py-2 sm:py-3 px-4 sm:px-6 rounded text-sm sm:text-base" style={{ background: '#2e6b8a', color: '#fff' }}>
+            <button onClick={handleResetGame} className="font-mono font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-base hover:opacity-90 transition-opacity" style={{ background: '#2e6b8a', color: '#fff' }}>
               PLAY AGAIN
             </button>
           </div>
         ) : (
-          <div className="flex justify-between items-center rounded p-2 sm:p-3 gap-2" style={{ background: '#fff', border: '1px solid #c45c3e', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+          <div className="flex justify-between items-center rounded-lg p-2 sm:p-3 gap-2" style={{ background: '#252b3d', border: '1px solid #3d4556', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
             {/* Player 1 */}
-            <div className={`flex items-center gap-2 p-2 rounded transition-all ${current_turn === 1 ? 'ring-2 ring-amber-400' : 'opacity-60'}`}>
+            <div className={`flex items-center gap-2 p-2 rounded-lg transition-all ${current_turn === 1 ? 'ring-2 ring-amber-500' : 'opacity-50'}`} style={{ background: current_turn === 1 ? 'rgba(212,164,106,0.1)' : 'transparent' }}>
               <div className="checker checker-white w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
               <div>
-                <p className="font-bold text-sm sm:text-base" style={{ color: '#2c3e50' }}>{player1_username}</p>
-                <p className="text-xs" style={{ color: '#6b7280' }}>Off: {borne_off.player1}</p>
+                <p className="font-bold text-sm sm:text-base" style={{ color: '#e8e4dc' }}>{player1_username}</p>
+                <p className="text-xs" style={{ color: '#9ca3af' }}>Off: {borne_off.player1}</p>
               </div>
               {(sessionScore.player1Wins > 0 || sessionScore.player2Wins > 0) && (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(212,164,106,0.3)', color: '#c45c3e' }}>{sessionScore.player1Wins}</span>
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(212,164,106,0.25)', color: '#d4a46a' }}>{sessionScore.player1Wins}</span>
               )}
-              {current_turn === 1 && <span className="animate-pulse ml-1" style={{ color: '#c45c3e' }}>▶</span>}
+              {current_turn === 1 && <span className="animate-pulse ml-1" style={{ color: '#d4a46a' }}>▶</span>}
             </div>
 
             {/* Dice */}
@@ -724,28 +723,28 @@ export default function Game() {
                   {dice.map((d, i) => renderDice(d, i))}
                 </div>
               ) : needsToRoll ? (
-                <button onClick={handleRollDice} disabled={isRolling} className="font-bold py-2 px-4 rounded text-sm transition-all hover:scale-105" style={{ background: '#2e6b8a', color: '#fff' }}>
+                <button onClick={handleRollDice} disabled={isRolling} className="font-bold py-2 px-4 rounded-lg text-sm transition-all hover:scale-105 hover:opacity-90" style={{ background: '#2e6b8a', color: '#fff' }}>
                   {isRolling ? 'Rolling...' : 'Roll Dice'}
                 </button>
               ) : (
                 <div className="text-xs" style={{ color: '#6b7280' }}>Waiting...</div>
               )}
               {moves_left && moves_left.length > 0 && (
-                <div className="text-xs" style={{ color: '#6b7280' }}>
+                <div className="text-xs" style={{ color: '#9ca3af' }}>
                   Moves: {moves_left.join(', ')}
                 </div>
               )}
             </div>
 
             {/* Player 2 */}
-            <div className={`flex items-center gap-2 p-2 rounded transition-all ${current_turn === 2 ? 'ring-2 ring-amber-400' : 'opacity-60'}`}>
-              {current_turn === 2 && <span className="animate-pulse mr-1" style={{ color: '#2e6b8a' }}>◀</span>}
+            <div className={`flex items-center gap-2 p-2 rounded-lg transition-all ${current_turn === 2 ? 'ring-2 ring-amber-500' : 'opacity-50'}`} style={{ background: current_turn === 2 ? 'rgba(212,164,106,0.1)' : 'transparent' }}>
+              {current_turn === 2 && <span className="animate-pulse mr-1" style={{ color: '#d4a46a' }}>◀</span>}
               {(sessionScore.player1Wins > 0 || sessionScore.player2Wins > 0) && (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(46,107,138,0.2)', color: '#2e6b8a' }}>{sessionScore.player2Wins}</span>
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(46,107,138,0.25)', color: '#5a9ab8' }}>{sessionScore.player2Wins}</span>
               )}
               <div className="text-right">
-                <p className="font-bold text-sm sm:text-base" style={{ color: '#2c3e50' }}>{player2_username || 'Waiting...'}</p>
-                <p className="text-xs" style={{ color: '#6b7280' }}>Off: {borne_off.player2}</p>
+                <p className="font-bold text-sm sm:text-base" style={{ color: '#e8e4dc' }}>{player2_username || 'Waiting...'}</p>
+                <p className="text-xs" style={{ color: '#9ca3af' }}>Off: {borne_off.player2}</p>
               </div>
               <div className="checker checker-black w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
             </div>
@@ -851,16 +850,16 @@ export default function Game() {
               {/* Bear off area - Player 1 with home indicator */}
               <div 
                 className={`w-8 sm:w-12 flex flex-col items-center justify-start pt-2 cursor-pointer rounded-r ${validMoves.includes('off') && playerNumber === 1 ? 'ring-2 ring-amber-300 valid-move' : ''}`}
-                style={{ background: '#d4a46a' }}
+                style={{ background: '#8b6f47' }}
                 onClick={handleBearOffClick}
               >
                 {playerNumber === 1 && (
-                  <svg className="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="#ffffff" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}>
+                  <svg className="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="#faf8f5" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}>
                     <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                   </svg>
                 )}
                 {borne_off.player1 > 0 && (
-                  <div className="text-xs font-bold" style={{ color: '#2c3e50' }}>
+                  <div className="text-xs font-bold" style={{ color: '#faf8f5' }}>
                     {borne_off.player1}
                   </div>
                 )}
@@ -872,7 +871,7 @@ export default function Game() {
               <div className="flex-1" />
               <div className="w-10 sm:w-14" style={{ background: '#a04830' }} />
               <div className="flex-1" />
-              <div className="w-8 sm:w-12" style={{ background: '#d4a46a' }} />
+              <div className="w-8 sm:w-12" style={{ background: '#8b6f47' }} />
             </div>
 
             {/* Bottom row (points 1-12 for player 1 view) */}
@@ -907,16 +906,16 @@ export default function Game() {
               {/* Bear off area - Player 2 with home indicator */}
               <div 
                 className={`w-8 sm:w-12 flex flex-col items-center justify-end pb-2 cursor-pointer rounded-r ${validMoves.includes('off') && playerNumber === 2 ? 'ring-2 ring-amber-300 valid-move' : ''}`}
-                style={{ background: '#d4a46a' }}
+                style={{ background: '#8b6f47' }}
                 onClick={handleBearOffClick}
               >
                 {borne_off.player2 > 0 && (
-                  <div className="text-xs font-bold" style={{ color: '#2c3e50' }}>
+                  <div className="text-xs font-bold" style={{ color: '#faf8f5' }}>
                     {borne_off.player2}
                   </div>
                 )}
                 {playerNumber === 2 && (
-                  <svg className="w-5 h-5 mt-1" viewBox="0 0 24 24" fill="#1a1a1a" style={{ filter: 'drop-shadow(0 1px 2px rgba(255,255,255,0.3))' }}>
+                  <svg className="w-5 h-5 mt-1" viewBox="0 0 24 24" fill="#faf8f5" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
                     <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                   </svg>
                 )}
@@ -928,13 +927,13 @@ export default function Game() {
 
       {/* Instructions */}
       {canMove && (
-        <div className="mt-2 text-center text-xs sm:text-sm" style={{ color: '#6b7280' }}>
+        <div className="mt-3 text-center text-xs sm:text-sm" style={{ color: '#9ca3af' }}>
           {selectedPoint !== null ? 'Click a highlighted point to move' : 'Click a checker to select, then click destination'}
         </div>
       )}
 
       {/* Back Button */}
-      <button onClick={() => router.push('/')} className="mt-4 font-mono font-bold py-2 px-4 rounded text-sm" style={{ background: '#c45c3e', color: '#fff' }}>
+      <button onClick={() => router.push('/')} className="mt-4 font-mono font-bold py-2 px-4 rounded-lg text-sm hover:opacity-90 transition-opacity" style={{ background: '#8b4513', color: '#e8e4dc' }}>
         ← BACK TO HOME
       </button>
     </div>

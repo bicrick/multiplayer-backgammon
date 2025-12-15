@@ -57,53 +57,46 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-3 sm:p-4" style={{ background: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #f5efe6 100%)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-3 sm:p-4" style={{ background: 'linear-gradient(145deg, #1a1f2e 0%, #252b3d 50%, #1a1f2e 100%)' }}>
       <div className="w-full max-w-sm sm:max-w-md flex flex-col items-center">
-        {/* Header with Mediterranean aesthetic */}
-        <div className="text-center mb-6 sm:mb-8 w-full">
-          <div className="mb-4">
-            {/* Decorative dice */}
-            <div className="flex justify-center items-center gap-3 mb-4">
-              <div className="dice w-10 h-10 flex items-center justify-center">
-                <div className="grid grid-cols-2 gap-1 p-1.5">
-                  <div className="dice-dot w-2 h-2"></div>
-                  <div className="dice-dot w-2 h-2"></div>
-                  <div className="dice-dot w-2 h-2"></div>
-                  <div className="dice-dot w-2 h-2"></div>
-                </div>
-              </div>
-              <div className="dice w-10 h-10 flex items-center justify-center">
-                <div className="grid grid-cols-3 gap-0.5 p-1">
-                  <div className="dice-dot w-1.5 h-1.5"></div>
-                  <div className="w-1.5 h-1.5"></div>
-                  <div className="dice-dot w-1.5 h-1.5"></div>
-                  <div className="w-1.5 h-1.5"></div>
-                  <div className="dice-dot w-1.5 h-1.5"></div>
-                  <div className="w-1.5 h-1.5"></div>
-                  <div className="dice-dot w-1.5 h-1.5"></div>
-                  <div className="w-1.5 h-1.5"></div>
-                  <div className="dice-dot w-1.5 h-1.5"></div>
-                </div>
-              </div>
-            </div>
+        {/* Header */}
+        <div className="text-center mb-8 w-full">
+          {/* Dice */}
+          <div className="flex justify-center gap-2 mb-5">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="drop-shadow-md">
+              <rect x="2" y="2" width="32" height="32" rx="4" fill="white" stroke="#e5e5e5" strokeWidth="1"/>
+              <circle cx="12" cy="12" r="3" fill="#1f2937"/>
+              <circle cx="24" cy="12" r="3" fill="#1f2937"/>
+              <circle cx="12" cy="24" r="3" fill="#1f2937"/>
+              <circle cx="24" cy="24" r="3" fill="#1f2937"/>
+            </svg>
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" className="drop-shadow-md">
+              <rect x="2" y="2" width="32" height="32" rx="4" fill="white" stroke="#e5e5e5" strokeWidth="1"/>
+              <circle cx="10" cy="10" r="2.5" fill="#1f2937"/>
+              <circle cx="26" cy="10" r="2.5" fill="#1f2937"/>
+              <circle cx="18" cy="18" r="2.5" fill="#1f2937"/>
+              <circle cx="10" cy="26" r="2.5" fill="#1f2937"/>
+              <circle cx="26" cy="26" r="2.5" fill="#1f2937"/>
+            </svg>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2 tracking-wide font-serif" style={{ color: '#2e6b8a', textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
+          {/* Title */}
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-wide text-white mb-1">
             BACKGAMMON
           </h1>
-          <p className="text-xs sm:text-sm uppercase tracking-[0.2em]" style={{ color: '#6b7280' }}>
+          <p className="text-sm uppercase tracking-widest text-gray-400">
             Multiplayer
           </p>
         </div>
 
-        {/* Panel with Mediterranean feel */}
+        {/* Panel */}
         <div className="w-full rounded-lg p-4 sm:p-6 border-2" style={{ 
-          background: '#fff',
-          borderColor: '#c45c3e',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          background: '#252b3d',
+          borderColor: '#8b4513',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
         }}>
           {/* Username Input */}
           <div className="mb-4">
-            <label className="block text-xs font-bold mb-2 uppercase" style={{ color: '#c45c3e' }}>
+            <label className="block text-xs font-bold mb-2 uppercase tracking-wider" style={{ color: '#d4a46a' }}>
               Player Name
             </label>
             <input
@@ -111,11 +104,11 @@ export default function Home() {
               placeholder="Enter name"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full p-2 sm:p-3 rounded placeholder-gray-400 focus:outline-none transition-colors text-sm sm:text-base"
+              className="w-full p-2 sm:p-3 rounded placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-colors text-sm sm:text-base"
               style={{ 
-                background: '#f5efe6',
-                border: '2px solid #d4cfc5',
-                color: '#2c3e50'
+                background: '#1a1f2e',
+                border: '2px solid #3d4556',
+                color: '#e8e4dc'
               }}
               disabled={loading}
             />
@@ -125,11 +118,11 @@ export default function Home() {
           <button
             onClick={handleCreate}
             disabled={loading}
-            className="w-full font-bold py-2 sm:py-3 px-4 rounded transition-all disabled:opacity-50 mb-4 text-sm sm:text-base hover:opacity-90"
+            className="w-full font-bold py-2 sm:py-3 px-4 rounded-lg transition-all disabled:opacity-50 mb-4 text-sm sm:text-base hover:opacity-90"
             style={{
               background: '#2e6b8a',
               color: '#fff',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
+              boxShadow: '0 4px 12px rgba(46,107,138,0.3)'
             }}
           >
             {loading ? (
@@ -144,27 +137,27 @@ export default function Home() {
 
           {/* Divider */}
           <div className="flex items-center mb-4">
-            <div className="flex-1 border-t" style={{ borderColor: '#d4cfc5' }}></div>
+            <div className="flex-1 border-t" style={{ borderColor: '#3d4556' }}></div>
             <span className="px-3 text-xs uppercase" style={{ color: '#6b7280' }}>or</span>
-            <div className="flex-1 border-t" style={{ borderColor: '#d4cfc5' }}></div>
+            <div className="flex-1 border-t" style={{ borderColor: '#3d4556' }}></div>
           </div>
 
           {/* Join Game Section */}
           <div className="mb-4">
-            <label className="block text-xs font-bold mb-2 uppercase" style={{ color: '#c45c3e' }}>
+            <label className="block text-xs font-bold mb-2 uppercase tracking-wider" style={{ color: '#d4a46a' }}>
               Room Code
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-stretch">
               <input
                 type="text"
                 placeholder="ABC123"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                className="flex-1 p-2 sm:p-3 rounded placeholder-gray-400 focus:outline-none transition-colors font-mono text-sm sm:text-base"
+                className="flex-1 p-2 sm:p-3 rounded placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-colors font-mono text-sm sm:text-base"
                 style={{ 
-                  background: '#f5efe6',
-                  border: '2px solid #d4cfc5',
-                  color: '#2c3e50'
+                  background: '#1a1f2e',
+                  border: '2px solid #3d4556',
+                  color: '#e8e4dc'
                 }}
                 disabled={loading}
                 maxLength={6}
@@ -172,9 +165,9 @@ export default function Home() {
               <button
                 onClick={handleJoin}
                 disabled={loading}
-                className="font-bold px-3 sm:px-4 py-2 sm:py-3 rounded transition-all disabled:opacity-50 text-sm sm:text-base hover:opacity-90"
+                className="font-bold px-4 sm:px-5 rounded transition-all disabled:opacity-50 text-sm sm:text-base hover:opacity-90"
                 style={{
-                  background: '#c45c3e',
+                  background: '#8b4513',
                   color: '#fff'
                 }}
               >
@@ -186,9 +179,9 @@ export default function Home() {
           {/* Error Message */}
           {error && (
             <div className="px-3 py-2 rounded text-sm" style={{
-              background: 'rgba(196, 92, 62, 0.1)',
-              border: '1px solid #c45c3e',
-              color: '#c45c3e'
+              background: 'rgba(232, 131, 107, 0.15)',
+              border: '1px solid #e8836b',
+              color: '#e8836b'
             }}>
               {error}
             </div>
