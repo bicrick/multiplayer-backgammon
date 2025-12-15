@@ -96,9 +96,8 @@ function isValidMove(
   if (from === 'bar') {
     if (barCount === 0) return false;
     
-    // Player 1 enters at point 24-die (index 24-die-1 = 23-die+1)
-    // Player 2 enters at point die-1 (index die-1)
-    const entryPoint = player === 1 ? 24 - dieValue : dieValue - 1;
+    // Player 1 enters opponent's home (indices 0-5), Player 2 enters opponent's home (indices 18-23)
+    const entryPoint = player === 1 ? dieValue - 1 : 24 - dieValue;
     
     // Check if entry point is blocked (2+ opponent checkers)
     if (board[entryPoint] * playerSign < -1) {
@@ -216,7 +215,8 @@ function hasValidMoves(
   for (const die of movesLeft) {
     // If on bar, check bar entry
     if (barCount > 0) {
-      const entryPoint = player === 1 ? 24 - die : die - 1;
+      // Player 1 enters opponent's home (indices 0-5), Player 2 enters opponent's home (indices 18-23)
+      const entryPoint = player === 1 ? die - 1 : 24 - die;
       if (board[entryPoint] * playerSign >= -1) {
         return true;
       }
@@ -356,23 +356,14 @@ export async function POST(request: Request) {
     // Check for winner
     const winner = checkWinner(newBorneOff);
 
-    // Check if more moves available
-    const canContinue = newMovesLeft.length > 0 && 
-      hasValidMoves(newBoard, newBar, newBorneOff, newMovesLeft, player);
-
+    // Keep moves_left as-is - player must manually end turn
     const updateData: Partial<GameState> = {
       board: newBoard,
       bar: newBar,
       borne_off: newBorneOff,
-      moves_left: canContinue ? newMovesLeft : [],
+      moves_left: newMovesLeft,
       winner: winner,
     };
-
-    // End turn if no more moves
-    if (!canContinue && winner === null) {
-      updateData.current_turn = player === 1 ? 2 : 1;
-      updateData.dice = null;
-    }
 
     const { data: updated, error: updateError } = await supabase
       .from('backgammon_games')

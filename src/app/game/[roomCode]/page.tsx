@@ -42,6 +42,18 @@ export default function Game() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [sessionScore, setSessionScore] = useState<{player1Wins: number, player2Wins: number}>({player1Wins: 0, player2Wins: 0});
   const [isRolling, setIsRolling] = useState(false);
+  const [animatedPoints, setAnimatedPoints] = useState<Set<number | 'bar'>>(new Set());
+  
+  // Preview/ghost move state
+  const [previewBoard, setPreviewBoard] = useState<number[] | null>(null);
+  const [previewBar, setPreviewBar] = useState<{ player1: number; player2: number } | null>(null);
+  const [previewBorneOff, setPreviewBorneOff] = useState<{ player1: number; player2: number } | null>(null);
+  const [previewMovesLeft, setPreviewMovesLeft] = useState<number[] | null>(null);
+  const [pendingMoves, setPendingMoves] = useState<Array<{ from: number | 'bar'; to: number | 'off'; dieValue: number }>>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const previousBoardRef = useRef<number[] | null>(null);
+  const previousBarRef = useRef<{ player1: number; player2: number } | null>(null);
   const lastProcessedWinner = useRef<string | null>(null);
   const soundFunctionsRef = useRef<{
     playMoveSound: () => void;
@@ -149,6 +161,69 @@ export default function Game() {
     });
   }, [playSound]);
 
+  // Check if any valid moves exist for the current state
+  const hasAnyValidMoves = useCallback((
+    board: number[],
+    bar: { player1: number; player2: number },
+    borneOff: { player1: number; player2: number },
+    movesLeft: number[],
+    player: 1 | 2
+  ): boolean => {
+    if (movesLeft.length === 0) return false;
+    
+    const playerSign = player === 1 ? 1 : -1;
+    const barCount = player === 1 ? bar.player1 : bar.player2;
+    
+    // Check bar first if pieces are on it
+    if (barCount > 0) {
+      for (const die of movesLeft) {
+        const entryPoint = player === 1 ? die - 1 : 24 - die;
+        if (entryPoint >= 0 && entryPoint <= 23 && board[entryPoint] * playerSign >= -1) {
+          return true;
+        }
+      }
+      return false; // Can't enter from bar
+    }
+    
+    // Check all points for valid moves
+    for (let i = 0; i < 24; i++) {
+      if (board[i] * playerSign > 0) {
+        for (const die of movesLeft) {
+          const dest = player === 1 ? i + die : i - die;
+          
+          // Normal move
+          if (dest >= 0 && dest <= 23 && board[dest] * playerSign >= -1) {
+            return true;
+          }
+          
+          // Bearing off
+          const canBearOff = (() => {
+            if (player === 1) {
+              for (let j = 0; j < 18; j++) if (board[j] > 0) return false;
+              return true;
+            } else {
+              for (let j = 6; j < 24; j++) if (board[j] < 0) return false;
+              return true;
+            }
+          })();
+          
+          if (canBearOff) {
+            if (player === 1 && i >= 18 && i + die >= 24) {
+              const furthest = (() => { for (let j = 0; j < 24; j++) if (board[j] > 0) return j; return -1; })();
+              if (i + die === 24 || furthest >= i) return true;
+            }
+            if (player === 2 && i <= 5 && i - die <= -1) {
+              const furthest = (() => { for (let j = 23; j >= 0; j--) if (board[j] < 0) return j; return -1; })();
+              if (i - die === -1 || furthest <= i) return true;
+            }
+          }
+        }
+      }
+    }
+    
+    return false;
+  }, []);
+
   // Calculate valid moves for selected piece
   const calculateValidMoves = useCallback((
     from: number | 'bar',
@@ -167,7 +242,8 @@ export default function Game() {
 
     for (const die of [...new Set(movesLeft)]) {
       if (from === 'bar') {
-        const entryPoint = player === 1 ? 24 - die : die - 1;
+        // Player 1 enters opponent's home (indices 0-5), Player 2 enters opponent's home (indices 18-23)
+        const entryPoint = player === 1 ? die - 1 : 24 - die;
         if (entryPoint >= 0 && entryPoint <= 23 && board[entryPoint] * playerSign >= -1) {
           if (!valid.includes(entryPoint)) valid.push(entryPoint);
         }
@@ -284,6 +360,52 @@ export default function Game() {
         { event: 'UPDATE', schema: 'public', table: 'backgammon_games', filter: `room_code=eq.${roomCode}` },
         (payload) => {
           const newGame = payload.new as GameState;
+          
+          // Detect board changes for animation (only when opponent moves)
+          const currentPlayerNum = localStorage.getItem('playerNumber');
+          const isOpponentMove = currentPlayerNum && parseInt(currentPlayerNum) !== newGame.current_turn;
+          
+          if (previousBoardRef.current && isOpponentMove) {
+            const changedPoints = new Set<number | 'bar'>();
+            
+            // Check board positions for pieces that arrived (increased count)
+            for (let i = 0; i < 24; i++) {
+              const oldCount = Math.abs(previousBoardRef.current[i]);
+              const newCount = Math.abs(newGame.board[i]);
+              if (newCount > oldCount) {
+                changedPoints.add(i);
+              }
+            }
+            
+            // Check bar for pieces that arrived
+            if (previousBarRef.current) {
+              if (newGame.bar.player1 > previousBarRef.current.player1 || 
+                  newGame.bar.player2 > previousBarRef.current.player2) {
+                changedPoints.add('bar');
+              }
+            }
+            
+            if (changedPoints.size > 0) {
+              setAnimatedPoints(changedPoints);
+              // Clear animation after it completes
+              setTimeout(() => setAnimatedPoints(new Set()), 400);
+            }
+          }
+          
+          // Store current state for next comparison
+          previousBoardRef.current = [...newGame.board];
+          previousBarRef.current = { ...newGame.bar };
+          
+          // Clear preview state if it's no longer our turn (game moved to next turn)
+          const myPlayerNum = localStorage.getItem('playerNumber');
+          if (myPlayerNum && parseInt(myPlayerNum) !== newGame.current_turn) {
+            setPreviewBoard(null);
+            setPreviewBar(null);
+            setPreviewBorneOff(null);
+            setPreviewMovesLeft(null);
+            setPendingMoves([]);
+          }
+          
           setGame((currentGame) => {
             if (newGame.winner !== null && currentGame?.winner === null) {
               const gameIdentifier = `${roomCode}_${Date.now()}_${newGame.winner}`;
@@ -353,6 +475,12 @@ export default function Game() {
       lastProcessedWinner.current = null;
       setSelectedPoint(null);
       setValidMoves([]);
+      // Clear preview state
+      setPreviewBoard(null);
+      setPreviewBar(null);
+      setPreviewBorneOff(null);
+      setPreviewMovesLeft(null);
+      setPendingMoves([]);
     } catch (err) {
       setError((err as Error).message);
     }
@@ -373,6 +501,15 @@ export default function Game() {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
+      
+      // Initialize preview state for local move preview
+      const rolledGame = data.game as GameState;
+      setPreviewBoard([...rolledGame.board]);
+      setPreviewBar({ ...rolledGame.bar });
+      setPreviewBorneOff({ ...rolledGame.borne_off });
+      setPreviewMovesLeft(rolledGame.moves_left ? [...rolledGame.moves_left] : []);
+      setPendingMoves([]);
+      
       setTimeout(() => setIsRolling(false), 500);
     } catch (err) {
       setError((err as Error).message);
@@ -380,12 +517,150 @@ export default function Game() {
     }
   };
 
+  const handleEndTurn = async () => {
+    if (!game || game.current_turn !== playerNumber || game.winner !== null) return;
+    if (!game.dice) return; // Must have rolled first
+
+    setIsSubmitting(true);
+    
+    try {
+      // Send all pending moves to the server
+      for (const move of pendingMoves) {
+        const res = await fetch('/api/moves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            roomCode, 
+            action: 'move', 
+            player: playerNumber, 
+            from: move.from, 
+            to: move.to, 
+            dieValue: move.dieValue 
+          }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+      }
+      
+      // Now end the turn
+      const res = await fetch('/api/moves', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomCode, action: 'endTurn', player: playerNumber }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      
+      // Clear preview state
+      setPreviewBoard(null);
+      setPreviewBar(null);
+      setPreviewBorneOff(null);
+      setPreviewMovesLeft(null);
+      setPendingMoves([]);
+      setSelectedPoint(null);
+      setValidMoves([]);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // Undo the last preview move
+  const handleUndo = () => {
+    if (!game || pendingMoves.length === 0) return;
+    
+    // Reset to original game state and replay all moves except the last one
+    const movesToReplay = pendingMoves.slice(0, -1);
+    
+    // Start from original game state
+    let board = [...game.board];
+    let bar = { ...game.bar };
+    let borneOff = { ...game.borne_off };
+    let movesLeft = game.moves_left ? [...game.moves_left] : [];
+    
+    // Replay all moves except the last one
+    for (const move of movesToReplay) {
+      const result = applyLocalMove(board, bar, borneOff, movesLeft, move.from, move.to, move.dieValue, playerNumber!);
+      board = result.board;
+      bar = result.bar;
+      borneOff = result.borneOff;
+      movesLeft = result.movesLeft;
+    }
+    
+    setPreviewBoard(board);
+    setPreviewBar(bar);
+    setPreviewBorneOff(borneOff);
+    setPreviewMovesLeft(movesLeft);
+    setPendingMoves(movesToReplay);
+    setSelectedPoint(null);
+    setValidMoves([]);
+    
+    soundFunctionsRef.current?.playMoveSound();
+  };
+  
+  // Apply a move locally (for preview)
+  const applyLocalMove = (
+    board: number[],
+    bar: { player1: number; player2: number },
+    borneOff: { player1: number; player2: number },
+    movesLeft: number[],
+    from: number | 'bar',
+    to: number | 'off',
+    dieValue: number,
+    player: 1 | 2
+  ) => {
+    const newBoard = [...board];
+    const newBar = { ...bar };
+    const newBorneOff = { ...borneOff };
+    const playerSign = player === 1 ? 1 : -1;
+    
+    // Remove checker from source
+    if (from === 'bar') {
+      if (player === 1) newBar.player1--;
+      else newBar.player2--;
+    } else {
+      newBoard[from] -= playerSign;
+    }
+    
+    // Add checker to destination
+    if (to === 'off') {
+      if (player === 1) newBorneOff.player1++;
+      else newBorneOff.player2++;
+    } else {
+      // Check for hit (single opponent checker)
+      if (newBoard[to] * playerSign === -1) {
+        newBoard[to] = 0;
+        if (player === 1) newBar.player2++;
+        else newBar.player1++;
+      }
+      newBoard[to] += playerSign;
+    }
+    
+    // Remove used die
+    const newMovesLeft = [...movesLeft];
+    const dieIndex = newMovesLeft.indexOf(dieValue);
+    if (dieIndex !== -1) {
+      newMovesLeft.splice(dieIndex, 1);
+    }
+    
+    return { board: newBoard, bar: newBar, borneOff: newBorneOff, movesLeft: newMovesLeft };
+  };
+
   const handlePointClick = (pointIndex: number | 'bar') => {
     if (!game || game.winner !== null || game.current_turn !== playerNumber) return;
-    if (!game.dice || !game.moves_left || game.moves_left.length === 0) return;
+    if (!game.dice) return;
+    
+    // Use preview state if available, otherwise use game state
+    const currentBoard = previewBoard || game.board;
+    const currentBar = previewBar || game.bar;
+    const currentBorneOff = previewBorneOff || game.borne_off;
+    const currentMovesLeft = previewMovesLeft || game.moves_left || [];
+    
+    if (currentMovesLeft.length === 0) return;
 
     const playerSign = playerNumber === 1 ? 1 : -1;
-    const barCount = playerNumber === 1 ? game.bar.player1 : game.bar.player2;
+    const barCount = playerNumber === 1 ? currentBar.player1 : currentBar.player2;
 
     // Clicking on valid move destination
     if (selectedPoint !== null && validMoves.includes(pointIndex as number)) {
@@ -397,13 +672,13 @@ export default function Game() {
     if (pointIndex === 'bar') {
       if (barCount > 0) {
         setSelectedPoint('bar');
-        setValidMoves(calculateValidMoves('bar', game.board, game.bar, game.borne_off, game.moves_left, playerNumber!));
+        setValidMoves(calculateValidMoves('bar', currentBoard, currentBar, currentBorneOff, currentMovesLeft, playerNumber!));
       }
     } else if (typeof pointIndex === 'number') {
-      const checkerCount = game.board[pointIndex];
+      const checkerCount = currentBoard[pointIndex];
       if (checkerCount * playerSign > 0 && barCount === 0) {
         setSelectedPoint(pointIndex);
-        setValidMoves(calculateValidMoves(pointIndex, game.board, game.bar, game.borne_off, game.moves_left, playerNumber!));
+        setValidMoves(calculateValidMoves(pointIndex, currentBoard, currentBar, currentBorneOff, currentMovesLeft, playerNumber!));
       } else {
         setSelectedPoint(null);
         setValidMoves([]);
@@ -417,8 +692,16 @@ export default function Game() {
     }
   };
 
-  const handleMove = async (from: number | 'bar', to: number | 'off') => {
-    if (!game || !game.moves_left) return;
+  const handleMove = (from: number | 'bar', to: number | 'off') => {
+    if (!game || !playerNumber) return;
+    
+    // Use preview state if available, otherwise use game state
+    const currentBoard = previewBoard || game.board;
+    const currentBar = previewBar || game.bar;
+    const currentBorneOff = previewBorneOff || game.borne_off;
+    const currentMovesLeft = previewMovesLeft || game.moves_left || [];
+    
+    if (currentMovesLeft.length === 0) return;
 
     // Determine which die value to use
     let dieValue: number | null = null;
@@ -426,10 +709,11 @@ export default function Game() {
 
     if (from === 'bar') {
       const entryPoint = to as number;
-      dieValue = playerNumber === 1 ? 24 - entryPoint : entryPoint + 1;
+      // Player 1 enters at die-1, so die = entryPoint+1; Player 2 enters at 24-die, so die = 24-entryPoint
+      dieValue = playerNumber === 1 ? entryPoint + 1 : 24 - entryPoint;
     } else if (to === 'off') {
       // Bearing off - find the matching die
-      for (const die of game.moves_left) {
+      for (const die of currentMovesLeft) {
         const dest = playerNumber === 1 ? (from as number) + die : (from as number) - die;
         if (playerNumber === 1 && dest >= 24) { dieValue = die; break; }
         if (playerNumber === 2 && dest <= -1) { dieValue = die; break; }
@@ -438,11 +722,12 @@ export default function Game() {
       dieValue = playerNumber === 1 ? (to as number) - (from as number) : (from as number) - (to as number);
     }
 
-    if (!dieValue || !game.moves_left.includes(dieValue)) {
+    if (!dieValue || !currentMovesLeft.includes(dieValue)) {
       // Try to find any valid die
-      for (const die of game.moves_left) {
+      for (const die of currentMovesLeft) {
         if (from === 'bar') {
-          const entryPoint = playerNumber === 1 ? 24 - die : die - 1;
+          // Player 1 enters at die-1, Player 2 enters at 24-die
+          const entryPoint = playerNumber === 1 ? die - 1 : 24 - die;
           if (entryPoint === to) { dieValue = die; break; }
         } else if (to === 'off') {
           const dest = playerNumber === 1 ? (from as number) + die : (from as number) - die;
@@ -460,28 +745,25 @@ export default function Game() {
     if (!dieValue) return;
 
     // Check if this is a hit
-    const isHit = to !== 'off' && typeof to === 'number' && game.board[to] * playerSign === -1;
+    const isHit = to !== 'off' && typeof to === 'number' && currentBoard[to] * playerSign === -1;
 
-    try {
-      const res = await fetch('/api/moves', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode, action: 'move', player: playerNumber, from, to, dieValue }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      
-      if (isHit) {
-        soundFunctionsRef.current?.playHitSound();
-      } else {
-        soundFunctionsRef.current?.playMoveSound();
-      }
-      
-      setSelectedPoint(null);
-      setValidMoves([]);
-    } catch (err) {
-      setError((err as Error).message);
+    // Apply move locally (preview mode)
+    const result = applyLocalMove(currentBoard, currentBar, currentBorneOff, currentMovesLeft, from, to, dieValue, playerNumber);
+    
+    setPreviewBoard(result.board);
+    setPreviewBar(result.bar);
+    setPreviewBorneOff(result.borneOff);
+    setPreviewMovesLeft(result.movesLeft);
+    setPendingMoves([...pendingMoves, { from, to, dieValue }]);
+    
+    if (isHit) {
+      soundFunctionsRef.current?.playHitSound();
+    } else {
+      soundFunctionsRef.current?.playMoveSound();
     }
+    
+    setSelectedPoint(null);
+    setValidMoves([]);
   };
 
   const copyGameUrl = async () => {
@@ -551,15 +833,14 @@ export default function Game() {
   };
 
   // Render checker
-  const renderChecker = (player: 1 | 2, count: number, isStacked: boolean = false, stackIndex: number = 0) => {
+  const renderChecker = (player: 1 | 2, count: number, isStacked: boolean = false, stackIndex: number = 0, isAnimated: boolean = false) => {
     const baseClass = player === 1 ? 'checker checker-white' : 'checker checker-black';
-    const isOpponent = playerNumber !== null && player !== playerNumber;
-    const opponentClass = isOpponent ? 'checker-opponent' : '';
     const size = 'w-6 h-6 sm:w-8 sm:h-8';
+    const animClass = isAnimated ? 'checker-arrive' : '';
     
     return (
       <div
-        className={`${baseClass} ${opponentClass} ${size} rounded-full flex-shrink-0`}
+        className={`${baseClass} ${size} ${animClass} rounded-full flex-shrink-0`}
         style={isStacked ? { marginTop: stackIndex > 0 ? '-12px' : '0' } : {}}
       >
         {count > 1 && stackIndex === 0 && (
@@ -573,11 +854,14 @@ export default function Game() {
 
   // Render point (triangle)
   const renderPoint = (index: number, isTop: boolean) => {
-    const checkerCount = game?.board[index] || 0;
+    // Use preview board if available, otherwise use game board
+    const currentBoard = previewBoard || game?.board;
+    const checkerCount = currentBoard?.[index] || 0;
     const player = checkerCount > 0 ? 1 : checkerCount < 0 ? 2 : null;
     const absCount = Math.abs(checkerCount);
     const isSelected = selectedPoint === index;
     const isValidTarget = validMoves.includes(index);
+    const isAnimated = animatedPoints.has(index);
     
     // Point colors alternate - terracotta and Aegean blue
     const pointColor = index % 2 === 0 ? '#b85a3a' : '#2e6b8a';
@@ -606,7 +890,7 @@ export default function Game() {
         <div className={`relative z-10 flex flex-col items-center ${isTop ? 'pt-1' : 'pb-1'}`}>
           {player && Array.from({ length: visibleCount }).map((_, i) => (
             <div key={i} style={{ marginTop: i > 0 ? '-8px' : '0' }}>
-              {renderChecker(player, absCount > maxVisible && i === 0 ? absCount : 1, true, i)}
+              {renderChecker(player, absCount > maxVisible && i === 0 ? absCount : 1, true, i, isAnimated && i === 0)}
             </div>
           ))}
         </div>
@@ -671,10 +955,28 @@ export default function Game() {
     );
   }
 
-  const { board, bar, borne_off, dice, moves_left, current_turn, winner, player1_username, player2_username } = game;
+  const { dice, current_turn, winner, player1_username, player2_username } = game;
+  
+  // Use preview state when available (during local move preview), otherwise use server state
+  const board = previewBoard || game.board;
+  const bar = previewBar || game.bar;
+  const borne_off = previewBorneOff || game.borne_off;
+  const moves_left = previewMovesLeft ?? game.moves_left;
+  
   const isMyTurn = current_turn === playerNumber && winner === null;
-  const needsToRoll = isMyTurn && (!dice || !moves_left || moves_left.length === 0);
+  const needsToRoll = isMyTurn && (!dice || !game.moves_left || game.moves_left.length === 0);
   const canMove = isMyTurn && dice && moves_left && moves_left.length > 0;
+  const isInPreviewMode = previewBoard !== null;
+  const hasPendingMoves = pendingMoves.length > 0;
+  
+  // Check if there are any valid moves available with current state
+  const hasValidMovesAvailable = isMyTurn && playerNumber && moves_left && moves_left.length > 0
+    ? hasAnyValidMoves(board, bar, borne_off, moves_left, playerNumber)
+    : false;
+  
+  // Can only end turn if: no moves left, OR no valid moves available (blocked)
+  const canEndTurn = isMyTurn && dice && (moves_left?.length === 0 || !hasValidMovesAvailable);
+  const isBlocked = isMyTurn && dice && moves_left && moves_left.length > 0 && !hasValidMovesAvailable;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4" style={{ background: 'linear-gradient(145deg, #1a1f2e 0%, #252b3d 50%, #1a1f2e 100%)' }}>
@@ -702,51 +1004,152 @@ export default function Game() {
             </button>
           </div>
         ) : (
-          <div className="flex justify-between items-center rounded-lg p-2 sm:p-3 gap-2" style={{ background: '#252b3d', border: '1px solid #3d4556', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
-            {/* Player 1 */}
-            <div className={`flex items-center gap-2 p-2 rounded-lg transition-all ${current_turn === 1 ? 'ring-2 ring-amber-500' : 'opacity-50'}`} style={{ background: current_turn === 1 ? 'rgba(212,164,106,0.1)' : 'transparent' }}>
-              <div className="checker checker-white w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
-              <div>
-                <p className="font-bold text-sm sm:text-base" style={{ color: '#e8e4dc' }}>{player1_username}</p>
+          <div className="flex justify-between items-stretch gap-3 sm:gap-4">
+            {/* Player 1 Card */}
+            <div 
+              className={`flex-1 flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl transition-all ${current_turn === 1 ? 'ring-2 ring-amber-500' : 'opacity-60'}`} 
+              style={{ 
+                background: current_turn === 1 ? 'linear-gradient(135deg, rgba(212,164,106,0.15), rgba(212,164,106,0.05))' : '#252b3d',
+                border: '1px solid',
+                borderColor: current_turn === 1 ? '#d4a46a' : '#3d4556',
+                boxShadow: current_turn === 1 ? '0 4px 20px rgba(212,164,106,0.2)' : '0 2px 8px rgba(0,0,0,0.2)'
+              }}
+            >
+              <div className="checker checker-white w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-sm sm:text-base truncate" style={{ color: '#e8e4dc' }}>{player1_username}</p>
+                  {(sessionScore.player1Wins > 0 || sessionScore.player2Wins > 0) && (
+                    <span className="px-1.5 py-0.5 rounded text-xs font-bold flex-shrink-0" style={{ background: 'rgba(212,164,106,0.25)', color: '#d4a46a' }}>{sessionScore.player1Wins}</span>
+                  )}
+                </div>
                 <p className="text-xs" style={{ color: '#9ca3af' }}>Off: {borne_off.player1}</p>
               </div>
-              {(sessionScore.player1Wins > 0 || sessionScore.player2Wins > 0) && (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(212,164,106,0.25)', color: '#d4a46a' }}>{sessionScore.player1Wins}</span>
-              )}
-              {current_turn === 1 && <span className="animate-pulse ml-1" style={{ color: '#d4a46a' }}>▶</span>}
+              {current_turn === 1 && <span className="animate-pulse text-lg" style={{ color: '#d4a46a' }}>▶</span>}
             </div>
 
-            {/* Dice */}
-            <div className="flex flex-col items-center gap-1">
+            {/* Dice Area */}
+            <div 
+              className="flex flex-col items-center justify-center px-3 sm:px-6 py-2 rounded-xl min-w-[120px] sm:min-w-[160px]"
+              style={{ 
+                background: '#252b3d',
+                border: '1px solid #3d4556',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+              }}
+            >
               {dice && dice.length > 0 ? (
-                <div className="flex gap-2">
-                  {dice.map((d, i) => renderDice(d, i))}
-                </div>
+                <>
+                  <div className="flex gap-2 sm:gap-3">
+                    {dice.map((d, i) => renderDice(d, i))}
+                  </div>
+                  {moves_left && moves_left.length > 0 && (
+                    <div className="text-xs mt-1" style={{ color: '#9ca3af' }}>
+                      {moves_left.join(', ')}
+                    </div>
+                  )}
+                </>
               ) : needsToRoll ? (
-                <button onClick={handleRollDice} disabled={isRolling} className="font-bold py-2 px-4 rounded-lg text-sm transition-all hover:scale-105 hover:opacity-90" style={{ background: '#2e6b8a', color: '#fff' }}>
-                  {isRolling ? 'Rolling...' : 'Roll Dice'}
+                <button 
+                  onClick={handleRollDice} 
+                  disabled={isRolling} 
+                  className={`group relative p-3 sm:p-4 rounded-xl transition-all hover:scale-110 active:scale-95 ${isRolling ? 'dice-shake' : ''}`}
+                  style={{ 
+                    background: 'linear-gradient(145deg, #3a7ca5, #2e6b8a)',
+                    boxShadow: '0 4px 12px rgba(46,107,138,0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+                  }}
+                  title="Roll Dice"
+                >
+                  {/* Dice icon */}
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="white" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="3" />
+                    <circle cx="8" cy="8" r="1.5" fill="white" stroke="none" />
+                    <circle cx="16" cy="8" r="1.5" fill="white" stroke="none" />
+                    <circle cx="8" cy="16" r="1.5" fill="white" stroke="none" />
+                    <circle cx="16" cy="16" r="1.5" fill="white" stroke="none" />
+                    <circle cx="12" cy="12" r="1.5" fill="white" stroke="none" />
+                  </svg>
                 </button>
               ) : (
-                <div className="text-xs" style={{ color: '#6b7280' }}>Waiting...</div>
+                <div className="flex gap-2 opacity-40">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" style={{ background: '#3d4556' }} />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" style={{ background: '#3d4556' }} />
+                </div>
               )}
-              {moves_left && moves_left.length > 0 && (
-                <div className="text-xs" style={{ color: '#9ca3af' }}>
-                  Moves: {moves_left.join(', ')}
+              
+              {/* No valid moves warning */}
+              {isBlocked && (
+                <div className="text-xs font-semibold mt-2" style={{ color: '#e8836b' }}>
+                  No valid moves!
+                </div>
+              )}
+              
+              {/* Action buttons */}
+              {isMyTurn && dice && dice.length > 0 && (
+                <div className="flex gap-2 mt-2">
+                  {hasPendingMoves && (
+                    <button 
+                      onClick={handleUndo}
+                      disabled={isSubmitting}
+                      className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
+                      style={{ background: '#6b7280' }}
+                      title="Undo"
+                    >
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="white" strokeWidth="2.5">
+                        <path d="M3 10h10a5 5 0 0 1 5 5v2M3 10l5-5M3 10l5 5" />
+                      </svg>
+                    </button>
+                  )}
+                  {hasPendingMoves && (
+                    <button 
+                      onClick={handleEndTurn}
+                      disabled={isSubmitting}
+                      className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
+                      style={{ background: '#16a34a' }}
+                      title="Confirm Moves"
+                    >
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="white" strokeWidth="3">
+                        <path d="M5 12l5 5L20 7" />
+                      </svg>
+                    </button>
+                  )}
+                  {!hasPendingMoves && canEndTurn && (
+                    <button 
+                      onClick={handleEndTurn}
+                      disabled={isSubmitting}
+                      className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
+                      style={{ background: '#d4a46a' }}
+                      title="End Turn"
+                    >
+                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="#1a1f2e" strokeWidth="3">
+                        <path d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Player 2 */}
-            <div className={`flex items-center gap-2 p-2 rounded-lg transition-all ${current_turn === 2 ? 'ring-2 ring-amber-500' : 'opacity-50'}`} style={{ background: current_turn === 2 ? 'rgba(212,164,106,0.1)' : 'transparent' }}>
-              {current_turn === 2 && <span className="animate-pulse mr-1" style={{ color: '#d4a46a' }}>◀</span>}
-              {(sessionScore.player1Wins > 0 || sessionScore.player2Wins > 0) && (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold" style={{ background: 'rgba(46,107,138,0.25)', color: '#5a9ab8' }}>{sessionScore.player2Wins}</span>
-              )}
-              <div className="text-right">
-                <p className="font-bold text-sm sm:text-base" style={{ color: '#e8e4dc' }}>{player2_username || 'Waiting...'}</p>
+            {/* Player 2 Card */}
+            <div 
+              className={`flex-1 flex items-center justify-end gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl transition-all ${current_turn === 2 ? 'ring-2 ring-amber-500' : 'opacity-60'}`} 
+              style={{ 
+                background: current_turn === 2 ? 'linear-gradient(135deg, rgba(212,164,106,0.15), rgba(212,164,106,0.05))' : '#252b3d',
+                border: '1px solid',
+                borderColor: current_turn === 2 ? '#d4a46a' : '#3d4556',
+                boxShadow: current_turn === 2 ? '0 4px 20px rgba(212,164,106,0.2)' : '0 2px 8px rgba(0,0,0,0.2)'
+              }}
+            >
+              {current_turn === 2 && <span className="animate-pulse text-lg" style={{ color: '#d4a46a' }}>◀</span>}
+              <div className="flex-1 min-w-0 text-right">
+                <div className="flex items-center justify-end gap-2">
+                  {(sessionScore.player1Wins > 0 || sessionScore.player2Wins > 0) && (
+                    <span className="px-1.5 py-0.5 rounded text-xs font-bold flex-shrink-0" style={{ background: 'rgba(46,107,138,0.25)', color: '#5a9ab8' }}>{sessionScore.player2Wins}</span>
+                  )}
+                  <p className="font-bold text-sm sm:text-base truncate" style={{ color: '#e8e4dc' }}>{player2_username || 'Waiting...'}</p>
+                </div>
                 <p className="text-xs" style={{ color: '#9ca3af' }}>Off: {borne_off.player2}</p>
               </div>
-              <div className="checker checker-black w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
+              <div className="checker checker-black w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0" />
             </div>
           </div>
         )}
@@ -835,7 +1238,7 @@ export default function Game() {
               >
                 {bar.player2 > 0 && (
                   <div className="relative">
-                    {renderChecker(2, bar.player2)}
+                    {renderChecker(2, bar.player2, false, 0, animatedPoints.has('bar'))}
                   </div>
                 )}
               </div>
@@ -891,7 +1294,7 @@ export default function Game() {
               >
                 {bar.player1 > 0 && (
                   <div className="relative">
-                    {renderChecker(1, bar.player1)}
+                    {renderChecker(1, bar.player1, false, 0, animatedPoints.has('bar'))}
                   </div>
                 )}
               </div>
@@ -926,9 +1329,24 @@ export default function Game() {
       </div>
 
       {/* Instructions */}
-      {canMove && (
+      {isMyTurn && dice && (
         <div className="mt-3 text-center text-xs sm:text-sm" style={{ color: '#9ca3af' }}>
-          {selectedPoint !== null ? 'Click a highlighted point to move' : 'Click a checker to select, then click destination'}
+          {isBlocked && !hasPendingMoves
+            ? 'All moves are blocked - click End Turn to pass'
+            : selectedPoint !== null 
+              ? 'Click a highlighted point to move' 
+              : hasPendingMoves 
+                ? hasValidMovesAvailable
+                  ? 'Make more moves, Undo to go back, or Confirm to finalize'
+                  : 'No more valid moves - Undo or Confirm to finalize'
+                : hasValidMovesAvailable
+                  ? 'Click a checker to select, then click destination'
+                  : 'No valid moves available'}
+        </div>
+      )}
+      {isMyTurn && hasPendingMoves && (
+        <div className="mt-1 text-center text-xs" style={{ color: '#d4a46a' }}>
+          {pendingMoves.length} move{pendingMoves.length !== 1 ? 's' : ''} pending - click Confirm Moves to submit
         </div>
       )}
 
