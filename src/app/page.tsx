@@ -80,7 +80,7 @@ export default function Home() {
             </svg>
           </div>
           {/* Title */}
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-wide text-white mb-1">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-wide text-white mb-1" style={{ fontFamily: 'var(--font-cinzel)' }}>
             BACKGAMMON
           </h1>
           <p className="text-sm uppercase tracking-widest text-gray-400">
