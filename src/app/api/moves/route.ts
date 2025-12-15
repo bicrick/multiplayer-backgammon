@@ -293,21 +293,12 @@ export async function POST(request: Request) {
     // Check if player can make any moves
     const canMove = hasValidMoves(gameState.board, gameState.bar, gameState.borne_off, movesLeft, player);
 
-    let updateData: Partial<GameState>;
-    
-    if (!canMove) {
-      // No valid moves - pass turn to opponent
-      updateData = {
-        dice: dice,
-        moves_left: [],
-        current_turn: player === 1 ? 2 : 1,
-      };
-    } else {
-      updateData = {
-        dice: dice,
-        moves_left: movesLeft,
-      };
-    }
+    // Always set dice and moves_left - client will detect blocked state
+    // and require manual end turn when no valid moves exist
+    const updateData: Partial<GameState> = {
+      dice: dice,
+      moves_left: movesLeft,
+    };
 
     const { data: updated, error: updateError } = await supabase
       .from('backgammon_games')

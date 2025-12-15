@@ -1028,105 +1028,118 @@ export default function Game() {
               {current_turn === 1 && <span className="animate-pulse text-lg" style={{ color: '#d4a46a' }}>▶</span>}
             </div>
 
-            {/* Dice Area */}
+            {/* Dice Area - Fixed height with placeholder space */}
             <div 
-              className="flex flex-col items-center justify-center px-3 sm:px-6 py-2 rounded-xl min-w-[120px] sm:min-w-[160px]"
+              className="flex flex-col items-center justify-between px-3 sm:px-6 py-2 rounded-xl min-w-[120px] sm:min-w-[160px]"
               style={{ 
                 background: '#252b3d',
                 border: '1px solid #3d4556',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                minHeight: '120px'
               }}
             >
-              {dice && dice.length > 0 ? (
-                <>
+              {/* Dice row - always same height */}
+              <div className="flex items-center justify-center h-12 sm:h-14">
+                {dice && dice.length > 0 ? (
                   <div className="flex gap-2 sm:gap-3">
                     {dice.map((d, i) => renderDice(d, i))}
                   </div>
-                  {moves_left && moves_left.length > 0 && (
-                    <div className="text-xs mt-1" style={{ color: '#9ca3af' }}>
-                      {moves_left.join(', ')}
-                    </div>
-                  )}
-                </>
-              ) : needsToRoll ? (
-                <button 
-                  onClick={handleRollDice} 
-                  disabled={isRolling} 
-                  className={`group relative p-3 sm:p-4 rounded-xl transition-all hover:scale-110 active:scale-95 ${isRolling ? 'dice-shake' : ''}`}
-                  style={{ 
-                    background: 'linear-gradient(145deg, #3a7ca5, #2e6b8a)',
-                    boxShadow: '0 4px 12px rgba(46,107,138,0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
-                  }}
-                  title="Roll Dice"
-                >
-                  {/* Dice icon */}
-                  <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="white" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="3" />
-                    <circle cx="8" cy="8" r="1.5" fill="white" stroke="none" />
-                    <circle cx="16" cy="8" r="1.5" fill="white" stroke="none" />
-                    <circle cx="8" cy="16" r="1.5" fill="white" stroke="none" />
-                    <circle cx="16" cy="16" r="1.5" fill="white" stroke="none" />
-                    <circle cx="12" cy="12" r="1.5" fill="white" stroke="none" />
-                  </svg>
-                </button>
-              ) : (
-                <div className="flex gap-2 opacity-40">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" style={{ background: '#3d4556' }} />
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" style={{ background: '#3d4556' }} />
-                </div>
-              )}
+                ) : needsToRoll ? (
+                  <button 
+                    onClick={handleRollDice} 
+                    disabled={isRolling} 
+                    className={`group relative p-3 sm:p-4 rounded-xl transition-all hover:scale-110 active:scale-95 ${isRolling ? 'dice-shake' : ''}`}
+                    style={{ 
+                      background: 'linear-gradient(145deg, #3a7ca5, #2e6b8a)',
+                      boxShadow: '0 4px 12px rgba(46,107,138,0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+                    }}
+                    title="Roll Dice"
+                  >
+                    {/* Dice icon */}
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="white" strokeWidth="2">
+                      <rect x="3" y="3" width="18" height="18" rx="3" />
+                      <circle cx="8" cy="8" r="1.5" fill="white" stroke="none" />
+                      <circle cx="16" cy="8" r="1.5" fill="white" stroke="none" />
+                      <circle cx="8" cy="16" r="1.5" fill="white" stroke="none" />
+                      <circle cx="16" cy="16" r="1.5" fill="white" stroke="none" />
+                      <circle cx="12" cy="12" r="1.5" fill="white" stroke="none" />
+                    </svg>
+                  </button>
+                ) : (
+                  <div className="flex gap-2 opacity-40">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" style={{ background: '#3d4556' }} />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" style={{ background: '#3d4556' }} />
+                  </div>
+                )}
+              </div>
               
-              {/* No valid moves warning */}
-              {isBlocked && (
-                <div className="text-xs font-semibold mt-2" style={{ color: '#e8836b' }}>
-                  No valid moves!
-                </div>
-              )}
+              {/* Moves left / status row - always reserved height */}
+              <div className="h-5 flex items-center justify-center">
+                {isBlocked ? (
+                  <div className="text-xs font-semibold" style={{ color: '#e8836b' }}>
+                    No valid moves!
+                  </div>
+                ) : moves_left && moves_left.length > 0 ? (
+                  <div className="text-xs" style={{ color: '#9ca3af' }}>
+                    {moves_left.join(', ')}
+                  </div>
+                ) : (
+                  /* Invisible placeholder to maintain height */
+                  <div className="text-xs invisible">0, 0</div>
+                )}
+              </div>
               
-              {/* Action buttons */}
-              {isMyTurn && dice && dice.length > 0 && (
-                <div className="flex gap-2 mt-2">
-                  {hasPendingMoves && (
-                    <button 
-                      onClick={handleUndo}
-                      disabled={isSubmitting}
-                      className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
-                      style={{ background: '#6b7280' }}
-                      title="Undo"
-                    >
-                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="white" strokeWidth="2.5">
-                        <path d="M3 10h10a5 5 0 0 1 5 5v2M3 10l5-5M3 10l5 5" />
-                      </svg>
-                    </button>
-                  )}
-                  {hasPendingMoves && (
-                    <button 
-                      onClick={handleEndTurn}
-                      disabled={isSubmitting}
-                      className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
-                      style={{ background: '#16a34a' }}
-                      title="Confirm Moves"
-                    >
-                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="white" strokeWidth="3">
-                        <path d="M5 12l5 5L20 7" />
-                      </svg>
-                    </button>
-                  )}
-                  {!hasPendingMoves && canEndTurn && (
-                    <button 
-                      onClick={handleEndTurn}
-                      disabled={isSubmitting}
-                      className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
-                      style={{ background: '#d4a46a' }}
-                      title="End Turn"
-                    >
-                      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="#1a1f2e" strokeWidth="3">
-                        <path d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              )}
+              {/* Action buttons row - always reserved height */}
+              <div className="h-8 flex items-center justify-center">
+                {isMyTurn && dice && dice.length > 0 ? (
+                  <div className="flex gap-2">
+                    {hasPendingMoves && (
+                      <button 
+                        onClick={handleUndo}
+                        disabled={isSubmitting}
+                        className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
+                        style={{ background: '#6b7280' }}
+                        title="Undo"
+                      >
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="white" strokeWidth="2.5">
+                          <path d="M3 10h10a5 5 0 0 1 5 5v2M3 10l5-5M3 10l5 5" />
+                        </svg>
+                      </button>
+                    )}
+                    {hasPendingMoves && (
+                      <button 
+                        onClick={handleEndTurn}
+                        disabled={isSubmitting}
+                        className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
+                        style={{ background: '#16a34a' }}
+                        title="Confirm Moves"
+                      >
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="white" strokeWidth="3">
+                          <path d="M5 12l5 5L20 7" />
+                        </svg>
+                      </button>
+                    )}
+                    {!hasPendingMoves && canEndTurn && (
+                      <button 
+                        onClick={handleEndTurn}
+                        disabled={isSubmitting}
+                        className="p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95"
+                        style={{ background: '#d4a46a' }}
+                        title="End Turn"
+                      >
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="#1a1f2e" strokeWidth="3">
+                          <path d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* Invisible placeholder to maintain height */
+                  <div className="p-1.5 invisible">
+                    <div className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Player 2 Card */}
